@@ -1,76 +1,131 @@
 package com.example.myapplication;
 
-import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
-
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.View;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.example.myapplication.databinding.ActivityMainBinding;
-
-import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
-    private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
+    // Descriptors for the various EditTexts
+    private TextView mTextViewProductionTitle;
+    private TextView mTextViewShortBreak;
+    private TextView mTextViewLongBreak;
+    private TextView mTextViewCycles;
+
+    // EditTexts for the user to set the various timers
+    private EditText mEditTextProductionTime;
+    private EditText mEditTextShortBreak;
+    private EditText mEditTextLongBreak;
+    private EditText mEditTextCycles;
+
+    // Button to set and Navigate to Timer
+    private Button mButtonToTimer;
+
+    // Information for the timer
+    private String productionTimeInput;
+    private String shortBreakInput;
+    private String longBreakInput;
+    private String cyclesInput;
+    private Bundle infoBundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        mTextViewProductionTitle = findViewById(R.id.text_title_production_time);
+        mTextViewShortBreak = findViewById(R.id.text_title_short_break);
+        mTextViewLongBreak = findViewById(R.id.text_title_long_break);
+        mTextViewCycles = findViewById(R.id.text_title_cycle);
 
-        setSupportActionBar(binding.toolbar);
+        mEditTextProductionTime = findViewById(R.id.text_production_time);
+        mEditTextShortBreak = findViewById(R.id.text_short_break);
+        mEditTextLongBreak = findViewById(R.id.text_long_break);
+        mEditTextCycles = findViewById(R.id.text_cycles);
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        mButtonToTimer = findViewById(R.id.button_to_timer);
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
+        mButtonToTimer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                getInputInformation();
+
+                // Check that all fields are filled - Alert Dialog 1
+                if (productionTimeInput.isEmpty() || shortBreakInput.isEmpty() || longBreakInput.isEmpty() || cyclesInput.isEmpty()) {
+                    showAlertDialog("Please enter all values", "Empty Fields");
+                }
+
+                // Check that all minutes are between 1 and 99 - Alert Dialog 2
+                else if ((Integer.parseInt(productionTimeInput) < 1 || Integer.parseInt(productionTimeInput) > 99) ||
+                        (Integer.parseInt(shortBreakInput) < 1 || Integer.parseInt(shortBreakInput) > 99) ||
+                        (Integer.parseInt(longBreakInput) < 1 || Integer.parseInt(longBreakInput) > 99)) {
+                    showAlertDialog("Please enter between 1 and 99 minutes", "Minutes");
+                }
+
+                // Check that all cycles are between 1 and 10 - Alert Dialog 3
+                else if ((Integer.parseInt(cyclesInput) < 1 || Integer.parseInt(cyclesInput) > 10)) {
+                    showAlertDialog("Please enter between 1 and 10 cycles", "Cycles");
+                }
+
+                else {
+                    generateBundle(infoBundle);
+                    intent.putExtras(infoBundle);
+                    startActivity(intent);
+                }
             }
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    private void showAlertDialog(String message, String title) {
+        AlertDialog dialog = new AlertDialog.Builder(MainActivity.this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                }).create();
+        dialog.show();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+    public void getInputInformation() {
+        productionTimeInput = mEditTextProductionTime.getText().toString().trim();
+        shortBreakInput = mEditTextShortBreak.getText().toString().trim();
+        longBreakInput = mEditTextLongBreak.getText().toString().trim();
+        cyclesInput = mEditTextCycles.getText().toString().trim();
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
+    public void generateBundle(Bundle b) {
+        b.putString("productionTime", productionTimeInput);
+        b.putString("shortBreak", shortBreakInput);
+        b.putString("longBreak", longBreakInput);
+        b.putString("cycles", cyclesInput);
+    }
+
+    // Getters and Setters
+
+    public String getProductionTimeInput() {
+        return productionTimeInput;
+    }
+
+    public String getShortBreakInput() {
+        return shortBreakInput;
+    }
+
+    public String getLongBreakInput() {
+        return longBreakInput;
+    }
+
+    public String getCyclesInput() {
+        return cyclesInput;
     }
 }
