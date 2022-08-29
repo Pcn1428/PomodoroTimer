@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         mEditTextCycles = findViewById(R.id.text_cycles);
 
         mButtonToTimer = findViewById(R.id.button_to_timer);
+        infoBundle = new Bundle();
 
         mButtonToTimer.setOnClickListener(new View.OnClickListener() {
             @Override
